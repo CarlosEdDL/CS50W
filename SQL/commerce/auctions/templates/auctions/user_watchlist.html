@@ -1,0 +1,15 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+Your current watchlist:
+{% if message %}
+{{ message }}
+{% endif %}
+
+<ul>
+    {% for listing in user_watchlist %}
+    <li> <a href="{% url 'listing' listing.id %}">{{ listing.product }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

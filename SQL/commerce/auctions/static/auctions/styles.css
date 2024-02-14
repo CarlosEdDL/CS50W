@@ -1,0 +1,16 @@
+body {
+    padding: 10px;
+}
+
+#description {
+    height: 50vh;
+    width: 80%;
+    margin-top: 20px
+}
+
+#comment {
+    height: 20vh;
+    width: 60%;
+    margin-top: 10px
+}
+

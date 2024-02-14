@@ -1,0 +1,36 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+
+
+{% if user.is_authenticated %}
+<a href="{% url 'create_listing' %}">Create new listing</a>
+{% else %}
+Sign In to add a new product
+{% endif %}
+<h2>Categories</h2>
+<form action="{% url 'show_category' %}" method="POST">
+    {% csrf_token %}
+
+    <select name="category">
+        {% for category in categories %}
+        <option value="{{ category }}">{{ category }}</option>
+        {% endfor%}
+    </select>
+    <input type="submit" value="Show category">
+</form>
+
+
+<h2>Active Listings</h2>
+{% if message %}
+{{ message }}
+{% endif %}
+
+<ul>
+    {% for item in listing_entries %}
+    <li> <a href="{% url 'listing' item.id %}"><p>{{ item.product }}</p></a> <p>{{ item.description }}</p> <p>Current bid: {{ item.minimum_bid }}</p></li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

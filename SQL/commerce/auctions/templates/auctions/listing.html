@@ -1,0 +1,67 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+{% if user == price.user_bid and not thelist %}
+Congratulations, you won the listing
+
+{% endif %}
+{% if userisOwner and thelist %}
+<form action="{% url 'closelisting' %}" method="POST">
+    {% csrf_token %}
+    <input hidden value="{{ listing }}" name="pk">
+    <input type="submit" value="close this listing">
+</form>
+{% endif %}
+{% if not thelist %}
+<p><h1>This auction is closed</h1></p>
+{% endif %}
+
+Listing: {{ product }}
+<br>
+Item description: {{ description }}
+<br>
+Current bid: {{ price }}
+
+<br>
+{% if user.is_authenticated %}
+<form method="post" action="{% url 'new_bid' %}">
+    {% csrf_token %}
+    <input hidden value="{{ listing }}" name="pk">
+    <input type="text" placeholder="place your bid" name="bid">
+    <input type="submit">
+</form>
+<br>
+
+
+{% if is_in_watchlist %}
+<form method="post" action="{% url 'removewatchlist' %}">
+    {% csrf_token %}
+    <input hidden value="{{ listing }}" name="pk">
+    <input type="submit" value="Remove from watchlist">
+</form>
+
+{% else %}
+<form method="post" action="{% url 'addwatchlist' %}">
+    {% csrf_token %}
+    <input hidden value="{{ listing }}" name="pk">
+    <input type="submit" value="Add to your watchlist">
+</form>
+{% endif %}
+
+{% else %}
+Sign in to place a bid or add this item to your watchlist
+{% endif %}
+<h3>Add a comment</h3>
+<form action="{% url 'addcomment' %}" method="POST">
+    {% csrf_token %}
+    <input hidden value="{{ listing }}" name="pk">
+    <textarea name="comment" id="comment"></textarea>
+    <input type="submit" value="Send">
+</form>
+<ul>
+    {% for comment in allComments %}
+    <li>{{ comment }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
