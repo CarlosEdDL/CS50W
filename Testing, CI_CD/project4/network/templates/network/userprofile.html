@@ -1,0 +1,57 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+
+<h1> {{ owner }}</h1>
+<p> {{ owner.followers.count }} Followers {{ owner.following.count }} Following </p>
+<p>
+
+    {% if valid_follow %}
+    {% if current_user_follows %}
+    <form method="post" action="{% url 'follow' %}">
+        {% csrf_token %}
+        <input hidden value="{{ owner }}" name="owner">
+        <input type="submit" value="Unfollow">
+    </form>
+    {% else %}
+    <form method="post" action="{% url 'follow' %}">
+        {% csrf_token %}
+        <input hidden value="{{ owner }}" name="owner">
+        <input type="submit" value="Follow">
+    </form>
+    {% endif %}
+    {% endif %}
+
+</p>
+<h2>All {{ owner }} Posts</h2>
+{% if message %}
+{{ message }}
+{% endif %}
+
+<ul class="list-group">
+    {% for post in page_obj %}
+    <li class="list-group-item"> {{ post.content }} <p>{{ post.likes }} likes </p> {{ post.timestamp }} </li>
+    {% endfor %}
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+    
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+    
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</ul>
+
+    
+{% endblock %}

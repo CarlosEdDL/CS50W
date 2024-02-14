@@ -1,0 +1,19 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+
+<h2>Posts by users you follow</h2>
+{% if message %}
+{{ message }}
+{% endif %}
+
+<ul class="list-group">
+    {% for post in posts %}
+    <li class="list-group-item"><p><a href ="{% url 'userprofile' post.owner.username %}" >{{ post.owner }}</a> published </p>  {{ post.content }} <p>{{ post.likes }} likes </p> {{ post.timestamp }} </li>
+    {% endfor %}
+</ul>
+
+    
+{% endblock %}

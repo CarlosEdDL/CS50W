@@ -1,0 +1,164 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+<script>
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length == 2) return parts.pop().split(';').shift();
+  }
+
+  function submitHandler(id) {
+    const textAreaValue = document.getElementById(`textarea_${id}`).value;
+    const content = document.getElementById(`content_${id}`);
+    const modal = document.getElementById(`modal_edit_post_${id}`)
+    fetch(`/edit/${id}`, {
+      method: "POST",
+      headers: { "Content-type": "application/json", "X-CSRFToken": getCookie("csrftoken") },
+      body: JSON.stringify({
+        content: textAreaValue
+      })
+
+    })
+      .then(response => response.json())
+      .then(result => {
+
+        content.innerHTML = result.data;
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('style', 'display: none');
+
+
+
+        // get modal backdrops
+        const modalsBackdrops = document.getElementsByClassName('modal-backdrop');
+
+        // remove every modal backdrop
+        for (let i = 0; i < modalsBackdrops.length; i++) {
+          document.body.removeChild(modalsBackdrops[i]);
+        }
+
+      })
+  }
+
+  function likeHandler(id){
+      const btn = document.getElementById(`like_${id}`)
+      const like_count = document.getElementById(`like_count_${id}`)
+      
+      if (btn.innerHTML == "Like") {
+        // change the text to Dislike
+        btn.innerHTML = "Dislike";
+        like_count.innerHTML = parseInt(like_count.innerHTML) + 1 + " likes";
+      } else {
+        // change the text to Like
+        like_count.innerHTML = parseInt(like_count.innerHTML) - 1 + " likes";
+        btn.innerHTML = "Like";
+      }
+
+      fetch(`/like/${id}`)
+      .then(response => response.json())
+      .then(result => {
+        console.log(result)
+      })
+
+    }
+</script>
+
+  
+  
+
+
+
+
+
+{% if user.is_authenticated %}
+<h3>New Post</h3>
+<form action="{% url 'createpost' %}" method="POST">
+  {% csrf_token %}
+
+  <textarea name="content" id="content"></textarea>
+  <input type="submit" value="Create Post">
+</form>
+{% endif %}
+
+<h2>All Posts</h2>
+{% if message %}
+{{ message }}
+{% endif %}
+
+<ul class="list-group">
+  {% for post in page_obj %}
+
+  <li class="list-group-item">
+    <p><a href="{% url 'userprofile' post.owner.username %}">{{ post.owner }}</a> published </p>
+    <div id="content_{{ post.id }}">
+      {{ post.content }}
+    </div>
+    <p><div id="like_count_{{ post.id }}"> {{ post.likes.count }} likes</div> </p> {{ post.timestamp }}
+
+    {% if user.is_authenticated %}
+    {% if post.id in who_you_liked %}
+    <button id="like_{{ post.id }}" onclick="likeHandler({{post.id}})">Dislike</button>
+    
+    {% else %}
+    <button id="like_{{ post.id }}" onclick="likeHandler({{post.id}})">Like</button>
+    
+    {% endif %}
+
+    {% endif %}
+    {% if user.is_authenticated and user == post.owner %}
+    <div>
+      <button data-toggle="modal" data-target="#modal_edit_post_{{ post.id }}">Edit</button>
+    </div>
+    <div class="modal" id="modal_edit_post_{{ post.id }}" tabindex="-1" aria-labelledby="modal_edit_post_{{ post.id }}"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <textarea id="textarea_{{ post.id }}"> {{ post.content }}</textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" onclick="submitHandler({{ post.id }})">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+      
+
+  </li>
+
+
+  {% endfor %}
+
+  <div class="pagination">
+    <span class="step-links">
+      {% if page_obj.has_previous %}
+      <a href="?page=1">&laquo; first</a>
+      <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+      {% endif %}
+
+      <span class="current">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+      </span>
+
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}">next</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+      {% endif %}
+    </span>
+  </div>
+
+
+
+</ul>
+
+
+{% endblock %}
